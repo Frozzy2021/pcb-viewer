@@ -31,8 +31,9 @@ canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 #empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:2;color:#e8ebee}
 #empty h2{font-size:20px;margin:0 0 8px}#empty p{color:#9aa5b0;margin:0 0 16px;max-width:360px}#empty .btn{display:inline-block;margin:4px}#emsg{color:#f0a060!important}
 #hint{position:absolute;left:10px;bottom:8px;color:#9aa5b0;font-size:12px;z-index:2;pointer-events:none}
+a.sup{margin-left:auto;text-decoration:none;color:#fff;background:#e8793a;border:1px solid #e8793a;border-radius:6px;padding:5px 11px;display:inline-flex;align-items:center}
 #tg{display:none}
-@media(max-width:700px){header{gap:6px;padding:6px 8px}h1{display:none}button,select,label.btn{padding:8px 11px;min-height:38px}#tg{display:inline-block}main{flex-direction:column-reverse}aside{width:100%;max-height:38%;border-right:0;border-top:1px solid var(--bd);padding:8px 10px}aside.min{display:none}#hint{display:none}}
+@media(max-width:700px){header{gap:6px;padding:6px 8px}h1{display:none}button,select,label.btn,a.sup{padding:8px 11px;min-height:38px}#tg{display:inline-block}main{flex-direction:column-reverse}aside{width:100%;max-height:38%;border-right:0;border-top:1px solid var(--bd);padding:8px 10px}aside{display:none}aside.open{display:block}#hint{display:none}header>*{order:2}label.btn.main{order:0;flex:1 1 40%;text-align:center}a.sup{order:1;flex:1 1 40%;justify-content:center;margin-left:0}}
 </style>
 </head>
 <body>
@@ -44,6 +45,7 @@ canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 <select id="mc"><option value="green">Маска: зелёная</option><option value="black">Маска: чёрная</option><option value="blue">Маска: синяя</option><option value="red">Маска: красная</option></select>
 <button id="ft" title="Вписать в экран">⤢ Вписать</button>
 <button id="tg">Слои</button>
+<a class="sup" href="https://www.donationalerts.com/r/frozzy2021" target="_blank" rel="noopener noreferrer">Поддержать проект</a>
 </header>
 <main>
 <aside>
@@ -65,7 +67,6 @@ const COL={fcu:'#d0453c',bcu:'#4d86d6',fmask:'#1fa653',bmask:'#18a8a0',fsilk:'#f
 const NM={fcu:'Медь верх',bcu:'Медь низ',fmask:'Маска верх',bmask:'Маска низ',fsilk:'Шелкография верх',bsilk:'Шелкография низ',outline:'Контур платы',drill:'Отверстия'};
 const MASKS={green:['#0d5c2b','#1f8f4a'],black:['#17181b','#2c2e34'],blue:['#0c3b80','#2166c0'],red:['#9a1b1b','#cf4040']};
 
-/* ---------- определение типа файла ---------- */
 function kind(n,t){n=n.toLowerCase();
  if(/^\s*m48/i.test(t)||/\.(drl|xln|drd)$/.test(n)||/(^|[-_.])(pth|npth|drill)/.test(n))return'drill';
  if(/\.(gko|gm1|gml)$|edge[._-]?cuts|outline|profile/.test(n))return'outline';
@@ -79,7 +80,6 @@ function kind(n,t){n=n.toLowerCase();
  if(sd){if(/mask/.test(n))return sd+'mask';if(/silk|legend|overlay/.test(n))return sd+'silk';if(/cop|\bcu\b/.test(n)||/[-_. ](top|bottom|bot)\.(gbr|ger)$/.test(n))return sd+'cu'}
  return null}
 
-/* ---------- парсер Gerber RS-274X ---------- */
 function pG(t){
  const pr=[];let k=1,fz='L',F={xi:2,xd:4,yi:2,yd:4},ap={},cur=null,op=2,md=1,reg=false,ct=null,x=0,y=0,clr=false;
  const N=(s,i,d)=>{if(s==null)return null;const ng=s[0]=='-';s=s.replace(/^[+-]/,'');let v;
@@ -125,7 +125,6 @@ function pG(t){
   x=nx;y=ny}
  fc();return pr}
 
-/* ---------- парсер Excellon ---------- */
 function pD(t){const h=[],T={};let k=1,cur=0;
  for(let l of t.split(/\r?\n/)){l=l.trim();
   if(/^(METRIC|M71)/.test(l))k=1;if(/^(INCH|M72)/.test(l))k=25.4;
@@ -142,7 +141,6 @@ function bnd(Ls){let a=1e9,b=1e9,c=-1e9,d=-1e9;
   else if(p.t=='f')u(p.x,p.y,Math.max(p.w,p.h)/2);else p.pts.forEach(q=>u(q[0],q[1]))}));
  return a>c?null:{minx:a,miny:b,maxx:c,maxy:d}}
 
-/* ---------- отрисовка слоя ---------- */
 const POOL={};
 function dl(L,W,H,m,col,key,inv){
  const c=POOL[key]||(POOL[key]=document.createElement('canvas'));
@@ -177,7 +175,6 @@ function composite(sd,W,H,m,key){
  if(LAY.drill){g.globalCompositeOperation='destination-out';g.drawImage(dl(LAY.drill,W,H,m,'#000',key+'e'),0,0);g.globalCompositeOperation='source-over'}
  g.restore();return o}
 
-/* ---------- 2D ---------- */
 function fit(){const c=$('#c2'),w=B.maxx-B.minx,h=B.maxy-B.miny,s=Math.min(c.width/(w*1.08),c.height/(h*1.08));V={s,ox:(c.width-w*s)/2,oy:(c.height-h*s)/2}}
 function draw2(){const c=$('#c2'),g=c.getContext('2d');g.clearRect(0,0,c.width,c.height);if(!B||!c.width)return;
  const m={...B,...V,fx:side=='bottom',fy:false};
@@ -196,7 +193,6 @@ function draw2(){const c=$('#c2'),g=c.getContext('2d');g.clearRect(0,0,c.width,c
 })();
 let rf=0;function rd(){if(!rf)rf=requestAnimationFrame(()=>{rf=0;draw2()})}
 
-/* ---------- 3D ---------- */
 let R,sc,cam,mesh,R0=80,cs={th:.4,ph:.7,r:80};
 function init3(){
  R=new THREE.WebGLRenderer({canvas:$('#c3'),antialias:true});R.outputEncoding=THREE.sRGBEncoding;R.setClearColor(0x14171a);R.setPixelRatio(DPR);
@@ -227,7 +223,6 @@ function build3(){
  sc.add(mesh);cs.r=R0=Math.max(w,h)*1.6;setCam()}
 function setCam(){if(side=='top'){cs.th=.0;cs.ph=.6}else{cs.th=Math.PI;cs.ph=Math.PI-.6}}
 
-/* ---------- интерфейс ---------- */
 function size(){const st=$('#stage'),w=st.clientWidth,h=st.clientHeight,c=$('#c2');
  c.width=w*DPR;c.height=h*DPR;if(R){R.setSize(w,h,false);cam.aspect=w/h;cam.updateProjectionMatrix()}
  if(B){fit();draw2()}}
@@ -239,7 +234,7 @@ function setView(v){view=v;$('#v2').classList.toggle('on',v=='2d');$('#v3').clas
 function setSide(s){side=s;$('#st').classList.toggle('on',s=='top');$('#sb').classList.toggle('on',s=='bottom');if(view=='3d')setCam();else draw2()}
 $('#v2').onclick=()=>setView('2d');$('#v3').onclick=()=>setView('3d');
 $('#st').onclick=()=>setSide('top');$('#sb').onclick=()=>setSide('bottom');
-$('#ft').onclick=()=>{if(view=='3d'){cs.r=R0;setCam()}else if(B){fit();draw2()}};$('#c2').ondblclick=()=>{if(B){fit();draw2()}};$('#real').onchange=draw2;$('#mk').onchange=()=>view=='3d'?build3():draw2();$('#tg').onclick=()=>$('aside').classList.toggle('min');
+$('#ft').onclick=()=>{if(view=='3d'){cs.r=R0;setCam()}else if(B){fit();draw2()}};$('#c2').ondblclick=()=>{if(B){fit();draw2()}};$('#real').onchange=draw2;$('#mk').onchange=()=>view=='3d'?build3():draw2();$('#tg').onclick=()=>$('aside').classList.toggle('open');
 $('#mc').onchange=e=>{maskKey=e.target.value;view=='3d'?build3():draw2()};
 
 function refresh(note){
@@ -274,7 +269,6 @@ addEventListener('dragleave',()=>{if(--dc<=0){dc=0;$('#drop').style.display='non
 addEventListener('dragover',e=>e.preventDefault());
 addEventListener('drop',e=>{e.preventDefault();dc=0;$('#drop').style.display='none';load([...e.dataTransfer.files])});
 
-if(innerWidth<700)$('aside').classList.add('min');
 size();
 </script>
 </body>
