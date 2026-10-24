@@ -164,15 +164,16 @@ function dl(L,W,H,m,col,key,inv){
 
 function composite(sd,W,H,m,key){
  const o=POOL[key+'o']||(POOL[key+'o']=document.createElement('canvas'));if(o.width!=W||o.height!=H){o.width=W;o.height=H}const g=o.getContext('2d'),p=sd=='top'?'f':'b',[bs,un]=MASKS[maskKey];g.globalCompositeOperation='source-over';g.clearRect(0,0,W,H);
- const off=!$('#mk').checked,bx=m.ox,by=m.oy,bw=(m.maxx-m.minx)*m.s,bh=(m.maxy-m.miny)*m.s;
+ const off=!$('#mk').checked||!vis[p+'mask'],bx=m.ox,by=m.oy,bw=(m.maxx-m.minx)*m.s,bh=(m.maxy-m.miny)*m.s;
  g.save();g.beginPath();g.rect(bx,by,bw,bh);g.clip();g.fillStyle=off?'#c2ad72':bs;g.fillRect(bx,by,bw,bh);
- const cu=LAY[p+'cu'],mk=off?null:LAY[p+'mask'],sk=LAY[p+'silk'];
+ const cu=vis[p+'cu']?LAY[p+'cu']:null,mk=off?null:LAY[p+'mask'],sk=vis[p+'silk']?LAY[p+'silk']:null;
  if(cu){g.drawImage(dl(cu,W,H,m,off?'#d9b24c':un,key+'a'),0,0);
   const e=dl(cu,W,H,m,'#d9b24c',key+'b');
   if(mk){const x=e.getContext('2d');x.globalCompositeOperation='destination-in';x.drawImage(dl(mk,W,H,m,'#fff',key+'c'),0,0);x.globalCompositeOperation='source-over'}
   g.drawImage(e,0,0)}
  if(sk)g.drawImage(dl(sk,W,H,m,'#f4f4ee',key+'d'),0,0);
- if(LAY.drill){g.globalCompositeOperation='destination-out';g.drawImage(dl(LAY.drill,W,H,m,'#000',key+'e'),0,0);g.globalCompositeOperation='source-over'}
+ if(vis.outline&&LAY.outline){g.globalAlpha=.4;g.drawImage(dl(LAY.outline,W,H,m,'#000',key+'f'),0,0);g.globalAlpha=1}
+ if(LAY.drill&&vis.drill){g.globalCompositeOperation='destination-out';g.drawImage(dl(LAY.drill,W,H,m,'#000',key+'e'),0,0);g.globalCompositeOperation='source-over'}
  g.restore();return o}
 
 function fit(){const c=$('#c2'),w=B.maxx-B.minx,h=B.maxy-B.miny,s=Math.min(c.width/(w*1.08),c.height/(h*1.08));V={s,ox:(c.width-w*s)/2,oy:(c.height-h*s)/2}}
@@ -244,7 +245,7 @@ function refresh(note){
  $('#ll').innerHTML='';
  ORDER.forEach(k=>{if(!LAY[k])return;vis[k]=true;const l=document.createElement('label');
   l.innerHTML='<input type="checkbox" checked><span class="sw" style="background:'+COL[k]+'"></span>'+NM[k]+'<span class="fn">'+(LAY[k].name||'')+'</span>';
-  l.firstChild.onchange=e=>{vis[k]=e.target.checked;draw2()};$('#ll').appendChild(l)});
+  l.firstChild.onchange=e=>{vis[k]=e.target.checked;view=='3d'?build3():draw2()};$('#ll').appendChild(l)});
  fit();view=='3d'?build3():draw2()}
 
 async function load(files){
