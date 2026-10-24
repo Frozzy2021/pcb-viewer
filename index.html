@@ -3,7 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PCB Viewer — просмотр Gerber</title>
+<title>Просмотр Gerber онлайн в 2D и 3D — PCB Viewer</title>
+<meta name="description" content="Бесплатный онлайн-просмотр Gerber-файлов печатной платы в 2D и 3D. Загрузите ZIP-архив или файлы слоёв и посмотрите плату с маской, шелкографией и отверстиями. Файлы остаются в вашем браузере.">
+<meta name="keywords" content="gerber просмотр онлайн, просмотр gerber файлов, gerber viewer, 3D печатной платы, открыть gerber, pcb viewer">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://frozzy2021.github.io/pcb-viewer/">
+<meta property="og:url" content="https://frozzy2021.github.io/pcb-viewer/">
+<meta property="og:type" content="website">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:site_name" content="PCB Viewer">
+<meta property="og:title" content="Просмотр Gerber онлайн в 2D и 3D — PCB Viewer">
+<meta property="og:description" content="Бесплатный онлайн-просмотр Gerber-файлов печатной платы в 2D и 3D. Загрузите ZIP-архив или файлы слоёв и посмотрите плату с маской, шелкографией и отверстиями. Файлы остаются в вашем браузере.">
+<meta name="twitter:card" content="summary">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"PCB Viewer","url":"https://frozzy2021.github.io/pcb-viewer/","alternateName":"Просмотр Gerber онлайн","applicationCategory":"DeveloperApplication","operatingSystem":"Any","inLanguage":"ru","description":"Бесплатный онлайн-просмотр Gerber-файлов печатной платы в 2D и 3D. Загрузите ZIP-архив или файлы слоёв и посмотрите плату с маской, шелкографией и отверстиями. Файлы остаются в вашем браузере.","offers":{"@type":"Offer","price":"0","priceCurrency":"RUB"}}</script>
 <meta name="theme-color" content="#1f8f4a">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='13' fill='%230f6b32'/%3E%3Cg fill='none' stroke='%23d9b24c' stroke-width='4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 46h14l9-14h16'/%3E%3Cpath d='M13 18h18l7 7'/%3E%3C/g%3E%3Cg fill='%23d9b24c'%3E%3Ccircle cx='13' cy='46' r='6'/%3E%3Ccircle cx='52' cy='32' r='6'/%3E%3Ccircle cx='13' cy='18' r='6'/%3E%3C/g%3E%3Cg fill='%230f6b32'%3E%3Ccircle cx='13' cy='46' r='2.4'/%3E%3Ccircle cx='52' cy='32' r='2.4'/%3E%3Ccircle cx='13' cy='18' r='2.4'/%3E%3C/g%3E%3C/svg%3E">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -28,7 +40,8 @@ aside label{display:flex;gap:6px;align-items:center;padding:2px 0}
 #stage{flex:1;position:relative;background:var(--st);min-width:0}
 canvas{position:absolute;inset:0;width:100%;height:100%;touch-action:none}
 #drop{position:absolute;inset:0;display:none;align-items:center;justify-content:center;background:#000a;color:#fff;font-size:20px;z-index:3}
-#empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:2;color:#e8ebee}
+#empty>div{margin:auto}#empty details{margin-top:18px;text-align:left;max-width:420px;color:#9aa5b0;font-size:13px}#empty summary{cursor:pointer;text-align:center;color:#c5ccd3}#empty details p{margin:10px 0 0;max-width:none}
+#empty{overflow:auto;position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;z-index:2;color:#e8ebee}
 #empty h2{font-size:20px;margin:0 0 8px}#empty p{color:#9aa5b0;margin:0 0 16px;max-width:360px}#empty .btn{display:inline-block;margin:4px}#emsg{color:#f0a060!important}
 #hint{position:absolute;left:10px;bottom:8px;color:#9aa5b0;font-size:12px;z-index:2;pointer-events:none}
 a.sup{margin-left:auto;text-decoration:none;color:#fff;background:#e8793a;border:1px solid #e8793a;border-radius:6px;padding:5px 11px;display:inline-flex;align-items:center}
@@ -38,7 +51,7 @@ a.sup{margin-left:auto;text-decoration:none;color:#fff;background:#e8793a;border
 </head>
 <body>
 <header>
-<h1>PCB Viewer</h1>
+<h1>PCB Viewer: просмотр Gerber онлайн</h1>
 <label class="btn main">Загрузить Gerber / ZIP<input id="fi" type="file" multiple hidden></label>
 <div class="seg"><button id="v2" class="on">2D</button><button id="v3">3D</button></div>
 <div class="seg"><button id="st" class="on">Верх</button><button id="sb">Низ</button></div>
@@ -56,7 +69,8 @@ a.sup{margin-left:auto;text-decoration:none;color:#fff;background:#e8793a;border
 <h2>Слои</h2>
 <div id="ll"></div>
 </aside>
-<div id="stage"><canvas id="c2"></canvas><canvas id="c3" style="display:none"></canvas><div id="empty"><div><h2>Выберите Gerber-файлы</h2><p>ZIP-архив или набор файлов платы</p><p id="emsg"></p><label class="btn main">Выбрать файл<input id="fi2" type="file" multiple hidden></label></div></div><div id="drop">Отпустите файлы здесь</div><div id="hint">Колесо — масштаб, перетаскивание — сдвиг</div></div>
+<div id="stage"><canvas id="c2"></canvas><canvas id="c3" style="display:none"></canvas><div id="empty"><div><h2>Выберите Gerber-файлы</h2><p>ZIP-архив или набор файлов платы</p><p id="emsg"></p><label class="btn main">Выбрать файл<input id="fi2" type="file" multiple hidden></label>
+<details><summary>О сервисе</summary><p>PCB Viewer это бесплатный просмотрщик Gerber-файлов прямо в браузере. Он открывает слои формата Gerber RS-274X и файлы сверловки Excellon: медь, паяльную маску, шелкографию, контур платы и отверстия.</p><p>Загрузите ZIP-архив с производственными файлами из вашей САПР или выберите файлы слоёв по отдельности. Плату можно рассматривать сверху и снизу в плоском виде, включать и выключать слои, а также вращать в объёмной 3D-модели.</p><p>Регистрация не нужна. Файлы обрабатываются на вашем устройстве и никуда не отправляются. Сервис работает на компьютере, телефоне и планшете.</p></details></div></div><div id="drop">Отпустите файлы здесь</div><div id="hint">Колесо — масштаб, перетаскивание — сдвиг</div></div>
 </main>
 <script>
 const $=s=>document.querySelector(s);
